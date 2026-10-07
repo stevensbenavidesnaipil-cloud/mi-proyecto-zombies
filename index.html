@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Cofre de las Maravillas - Wonder Weapons BO1 &amp; BO2</title>
+    <link rel="icon" type="image/jpeg" href="logo.jpg">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-image: linear-gradient(rgba(13, 13, 13, 0.88), rgba(13, 13, 13, 0.88)), url('erratas/bozombiesSaga.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            color: #e0e0e0;
+            font-family: 'Courier New', Courier, monospace;
+            min-height: 100vh;
+        }
+
+        .main-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+            background: rgba(13, 13, 13, 0.75);
+            backdrop-filter: blur(6px);
+            border-bottom: 3px solid #8B1C1C;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+        .logo-img {
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 0 20px rgba(139, 28, 28, 0.6);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            cursor: pointer;
+            animation: flotar 3s ease-in-out infinite;
+        }
+        .logo-img:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 0 35px rgba(233, 69, 96, 0.9);
+            animation: none;
+        }
+        .logo-img:active { transform: scale(0.95); }
+        @keyframes flotar {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+        .title-container { text-align: center; }
+        .title-container h1 {
+            font-size: 2.4rem;
+            color: #fff;
+            text-shadow: 2px 2px 6px #8B1C1C, 0 0 20px rgba(233, 69, 96, 0.4);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .title-container p {
+            margin-top: 5px;
+            font-size: 1rem;
+            color: #a0a0a0;
+            font-style: italic;
+        }
+
+        /* BARRA DE BÚSQUEDA */
+        .buscador-container {
+            display: flex;
+            justify-content: center;
+            padding: 20px 20px 0;
+        }
+        .buscador-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+        }
+        #buscador {
+            width: 100%;
+            background: rgba(13, 13, 13, 0.85);
+            border: 2px solid #8B1C1C;
+            border-radius: 30px;
+            padding: 14px 50px 14px 20px;
+            color: #e0e0e0;
+            font-family: inherit;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 12px rgba(139, 28, 28, 0.3);
+        }
+        #buscador::placeholder {
+            color: #808080;
+            font-style: italic;
+        }
+        #buscador:focus {
+            border-color: #e94560;
+            box-shadow: 0 0 25px rgba(233, 69, 96, 0.7);
+            background: rgba(26, 26, 46, 0.95);
+        }
+        .buscador-icono {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            color: #8B1C1C;
+            pointer-events: none;
+            transition: color 0.3s ease;
+        }
+        #buscador:focus + .buscador-icono { color: #e94560; }
+        .buscador-clear {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            color: #8B1C1C;
+            cursor: pointer;
+            user-select: none;
+            display: none;
+            transition: color 0.3s ease, transform 0.2s ease;
+        }
+        .buscador-clear:hover {
+            color: #e94560;
+            transform: translateY(-50%) scale(1.2);
+        }
+        .buscador-clear.visible { display: block; }
+
+        .filtros {
+            display: flex; justify-content: center;
+            gap: 15px; padding: 20px 25px 25px; flex-wrap: wrap;
+        }
+        .btn-filtro {
+            background: transparent; color: #e0e0e0;
+            border: 2px solid #8B1C1C;
+            padding: 10px 22px; border-radius: 25px;
+            cursor: pointer; font-family: inherit;
+            font-weight: bold; letter-spacing: 1px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        .btn-filtro:hover, .btn-filtro.activo {
+            background: #8B1C1C; color: #fff;
+            box-shadow: 0 0 18px rgba(233, 69, 96, 0.7);
+            transform: translateY(-3px);
+        }
+
+        .info-resultados {
+            text-align: center;
+            color: #a0a0a0;
+            font-size: 0.9rem;
+            font-style: italic;
+            letter-spacing: 1px;
+            padding-bottom: 5px;
+        }
+        .info-resultados strong { color: #e94560; }
+
+        .weapon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            padding: 20px 40px 60px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .weapon-card {
+            background: linear-gradient(145deg, #1a1a2e, #0d0d0d);
+            border: 1px solid #8B1C1C;
+            border-radius: 15px;
+            overflow: hidden;
+            display: flex; flex-direction: column;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            animation: fadeInUp 0.5s ease-out;
+        }
+        .weapon-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(139, 28, 28, 0.6);
+            border-color: #e94560;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-imagen {
+            background: radial-gradient(circle, #2a2a2a, #0d0d0d);
+            padding: 20px; text-align: center;
+            height: 200px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            position: relative;
+        }
+        .card-imagen img {
+            max-width: 150px; max-height: 150px;
+            object-fit: contain;
+            transition: transform 0.4s ease;
+        }
+        .weapon-card:hover .card-imagen img {
+            transform: scale(1.1) rotate(-5deg);
+        }
+        .card-imagen.sonando { background: radial-gradient(circle, #4a1818, #0d0d0d); }
+        .card-imagen.sonando img { animation: pulsoSonido 0.5s ease-out; }
+        @keyframes pulsoSonido {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        mark {
+            background: #e94560;
+            color: #fff;
+            padding: 0 3px;
+            border-radius: 3px;
+        }
+
+        .card-info {
+            padding: 18px;
+            display: flex; flex-direction: column;
+            gap: 6px; flex-grow: 1;
+        }
+        .badge {
+            align-self: flex-start;
+            padding: 3px 12px; border-radius: 12px;
+            font-size: 0.75rem; font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .badge.BO1 { background: #4a148c; color: #fff; }
+        .badge.BO2 { background: #b71c1c; color: #fff; }
+        .card-info h3 { color: #fff; font-size: 1.25rem; margin-top: 5px; }
+        .nombre-es { color: #a0a0a0; font-style: italic; font-size: 0.9rem; }
+        .mapa { color: #e94560; font-size: 0.9rem; margin-top: 4px; }
+        .tipo { color: #7db1e9; font-size: 0.85rem; }
+        .descripcion { color: #c0c0c0; font-size: 0.85rem; line-height: 1.5; margin-top: 8px; }
+        .btn-pap {
+            margin-top: 12px; background: #8B1C1C; color: #fff;
+            border: none; padding: 10px; border-radius: 8px;
+            cursor: pointer; font-family: inherit;
+            font-weight: bold; letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+        .btn-pap:hover {
+            background: #e94560;
+            box-shadow: 0 0 18px rgba(233, 69, 96, 0.8);
+            transform: scale(1.03);
+        }
+
+        .sin-resultados {
+            grid-column: 1 / -1; text-align: center;
+            color: #e94560; font-size: 1.2rem;
+            padding: 60px 40px; font-style: italic;
+        }
+
+        .modal {
+            display: none; position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.88);
+            justify-content: center; align-items: center;
+            z-index: 1000; padding: 20px;
+        }
+        .modal-contenido {
+            background: linear-gradient(145deg, #1a1a2e, #0d0d0d);
+            border: 2px solid #8B1C1C;
+            border-radius: 15px;
+            padding: 35px 30px 30px;
+            max-width: 500px; width: 100%;
+            color: #e0e0e0; position: relative;
+            animation: fadeInUp 0.3s ease-out;
+            box-shadow: 0 0 40px rgba(233, 69, 96, 0.5);
+        }
+        .cerrar {
+            position: absolute; top: 8px; right: 18px;
+            font-size: 2rem; cursor: pointer;
+            color: #e94560; transition: transform 0.2s;
+            line-height: 1; user-select: none;
+        }
+        .cerrar:hover { transform: scale(1.3); }
+        .modal-contenido h2 {
+            color: #fff; margin-bottom: 15px;
+            text-shadow: 2px 2px 4px #8B1C1C;
+        }
+        .modal-contenido p { line-height: 1.6; color: #d0d0d0; }
+        .pap-nombre { color: #e94560; font-weight: bold; font-size: 1.1rem; }
+
+        /* EASTER EGG */
+        .easter-egg-btn {
+            position: fixed;
+            bottom: 20px; right: 20px;
+            width: 90px; height: 90px;
+            cursor: pointer;
+            z-index: 900;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(233, 69, 96, 0.6);
+            border: 2px solid #8B1C1C;
+            background: rgba(13, 13, 13, 0.85);
+            animation: flotarCaja 2.5s ease-in-out infinite;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .easter-egg-btn img {
+            width: 100%; height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        .easter-egg-btn:hover {
+            transform: scale(1.15);
+            box-shadow: 0 0 35px rgba(233, 69, 96, 1);
+            animation: none;
+        }
+        @keyframes flotarCaja {
+            0% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-6px) rotate(-3deg); }
+            50% { transform: translateY(0) rotate(0deg); }
+            75% { transform: translateY(-6px) rotate(3deg); }
+            100% { transform: translateY(0) rotate(0deg); }
+        }
+        .easter-egg-btn::after {
+            content: '?';
+            position: absolute;
+            top: -10px; right: -10px;
+            width: 30px; height: 30px;
+            background: #e94560; color: #fff;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 1.2rem;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 0 10px rgba(233, 69, 96, 0.9);
+            animation: pulsoPregunta 1.5s ease-in-out infinite;
+        }
+        @keyframes pulsoPregunta {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .easter-egg-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 20px;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .easter-egg-overlay.activo { display: flex; }
+
+        .easter-egg-contenido {
+            max-width: 700px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+        }
+
+        .easter-gif {
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: 15px;
+            box-shadow: 0 0 60px rgba(233, 69, 96, 0.9);
+            animation: aparecerCaja 0.5s ease-out;
+            transition: opacity 0.6s ease;
+        }
+        @keyframes aparecerCaja {
+            0% { transform: scale(0.5) rotate(-15deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        .easter-gif.ocultar {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .easter-raygun {
+            display: none;
+            animation: aparecerCaja 0.6s ease-out;
+        }
+        .easter-raygun.activo { display: block; }
+
+        .easter-raygun img {
+            max-width: 100%;
+            max-height: 45vh;
+            border-radius: 15px;
+            box-shadow: 0 0 60px rgba(233, 69, 96, 0.9);
+            border: 3px solid #8B1C1C;
+        }
+
+        .easter-raygun-info {
+            margin-top: 20px;
+            background: linear-gradient(145deg, #1a1a2e, #0d0d0d);
+            border: 2px solid #8B1C1C;
+            border-radius: 15px;
+            padding: 20px 25px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(233, 69, 96, 0.4);
+        }
+        .easter-raygun-info h2 {
+            color: #fff;
+            font-size: 1.8rem;
+            text-shadow: 2px 2px 6px #8B1C1C;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+        .easter-raygun-info .raygun-sub {
+            color: #e94560;
+            font-style: italic;
+            font-size: 1rem;
+            margin-bottom: 12px;
+        }
+        .easter-raygun-info p {
+            color: #c0c0c0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .easter-raygun-info .pap-highlight {
+            color: #e94560;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .cerrar-easter {
+            position: absolute;
+            top: 20px; right: 25px;
+            font-size: 2.5rem;
+            color: #e94560;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+            line-height: 1;
+            user-select: none;
+            z-index: 2100;
+        }
+        .cerrar-easter:hover { transform: scale(1.3) rotate(90deg); }
+
+        @media (max-width: 700px) {
+            .main-header { flex-direction: column; text-align: center; padding: 20px 15px; }
+            .logo-img { width: 100px; height: 100px; }
+            .title-container h1 { font-size: 1.6rem; }
+            .title-container p { font-size: 0.85rem; }
+            .weapon-grid { grid-template-columns: 1fr; padding: 20px; }
+            .btn-filtro { font-size: 0.8rem; padding: 8px 16px; }
+            .easter-egg-btn { width: 65px; height: 65px; bottom: 15px; right: 15px; }
+            .easter-raygun-info h2 { font-size: 1.3rem; }
+            .cerrar-easter { font-size: 2rem; top: 10px; right: 15px; }
+            #buscador { font-size: 0.9rem; padding: 12px 45px 12px 18px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="logo-container">
+            <img src="erratas/juggernout.jpg" alt="Logo de Juggernog Soda" class="logo-img" id="logo-juggernog">
+        </div>
+        <div class="title-container">
+            <h1>El Cofre de las Maravillas</h1>
+            <p>Guía definitiva de Wonder Weapons - Black Ops 1 &amp; 2</p>
+        </div>
+    </header>
+
+    <section class="buscador-container">
+        <div class="buscador-wrapper">
+            <input type="text" id="buscador" placeholder="🔍 Buscar arma por nombre, mapa o tipo..." autocomplete="off">
+            <span class="buscador-icono" id="icono-lupa">🔍</span>
+            <span class="buscador-clear" id="buscador-clear" title="Limpiar búsqueda">✕</span>
+        </div>
+    </section>
+
+    <section class="filtros">
+        <button class="btn-filtro activo" data-filtro="todos">Todas</button>
+        <button class="btn-filtro" data-filtro="BO1">Black Ops 1</button>
+        <button class="btn-filtro" data-filtro="BO2">Black Ops 2</button>
+    </section>
+
+    <p class="info-resultados" id="info-resultados"></p>
+
+    <main class="weapon-grid" id="weapon-grid"></main>
+
+    <div class="modal" id="modal">
+        <div class="modal-contenido">
+            <span class="cerrar" id="cerrar-modal">&times;</span>
+            <h2 id="modal-titulo"></h2>
+            <p id="modal-info"></p>
+        </div>
+    </div>
+
+    <!-- Easter Egg: botón de la Caja Misteriosa -->
+    <div class="easter-egg-btn" id="easter-egg-btn" title="¿Qué habrá aquí?">
+        <img src="easter egg/mystery-box.gif" alt="Caja Misteriosa">
+    </div>
+
+    <!-- Easter Egg: overlay -->
+    <div class="easter-egg-overlay" id="easter-egg-overlay">
+        <span class="cerrar-easter" id="cerrar-easter">&times;</span>
+        <div class="easter-egg-contenido">
+            <img src="easter egg/mystery-box.gif" alt="Abriendo la Caja Misteriosa" class="easter-gif" id="easter-gif">
+            <div class="easter-raygun" id="easter-raygun">
+                <img src="easter egg/raygun.jpg" alt="Caja Misteriosa">
+                <div class="easter-raygun-info">
+                    <h2>¡CAJA MISTERIOSA!</h2>
+                    <p class="raygun-sub">El cofre maldito que aparece en todos los mapas de Zombies</p>
+                    <p>
+                        La <strong>Caja Misteriosa</strong> (Mystery Box) es un cofre de madera que aparece
+                        aleatoriamente por los mapas de Zombies. Al abrirlo, entrega un arma al azar a cambio
+                        de <strong>950 puntos</strong>. Puede dar armas comunes, armas Pack-a-Punch, o las
+                        codiciadas <em>Wonder Weapons</em>.
+                    </p>
+                    <br>
+                    <p>
+                        Si no te gusta lo que sale, podés volver a tirar, pero cuidado: cada tirada
+                        sube el precio. Y si sale el famoso <strong style="color:#e94560;">Osito de Peluche (Teddy Bear)</strong>,
+                        la caja se va a otro lugar del mapa. 🧸
+                    </p>
+                    <br>
+                    <p>
+                        <strong>Precio:</strong> <span class="pap-highlight">950 puntos por tirada</span><br>
+                        <strong>Aparece en:</strong> Todos los mapas de Zombies
+                    </p>
+                    <br>
+                    <p style="color: #8B1C1C; font-size: 0.85rem; font-style: italic;">
+                        ¡Has desbloqueado un secreto oculto! 🎉
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audios -->
+    <audio id="sonido-juggernog" src="juggernout.mp3" preload="auto"></audio>
+    <audio id="sonido-arma" src="mp3/Mystery Box.mp3" preload="auto"></audio>
+    <audio id="sonido-thundergun" src="mp3/thundergunsound.mp3" preload="auto"></audio>
+    <audio id="sonido-monkey" src="mp3/cod-zombies-monkey.mp3" preload="auto"></audio>
+    <audio id="sonido-raygun" src="mp3/zombie-global-raygun-stinger.mp3" preload="auto"></audio>
+
+    <script>
+        const wonderWeapons = [
+            { id: 1,  nombre: "Thundergun", nombreEs: "Cañón de Trueno", juego: "BO1", mapa: "Kino der Toten", tipo: "Especial", descripcion: "Dispara ráfagas de aire comprimido que lanzan a los zombies por los aires.", packAPunch: "Zeus Cannon", comoObtener: "Cofre Misterioso en Kino der Toten, Ascension, Call of the Dead, Shangri-La y Moon.", imagen: "img/Thundergun.webp" },
+            { id: 2,  nombre: "Winter's Howl", nombreEs: "Aullido Invernal", juego: "BO1", mapa: "Five", tipo: "Especial", descripcion: "Congela a los zombies en un radio de acción, dejándolos vulnerables.", packAPunch: "Winter's Fury", comoObtener: "Cofre Misterioso en el mapa Five.", imagen: "img/Winter's Howl.webp" },
+            { id: 3,  nombre: "Gersch Device", nombreEs: "Dispositivo Gersch", juego: "BO1", mapa: "Ascension", tipo: "Granada Táctica", descripcion: "Crea un agujero negro que succiona a todos los zombies del área.", packAPunch: "No tiene versión Pack-a-Punch", comoObtener: "Cofre Misterioso en Ascension.", imagen: "img/Gersch Device.webp" },
+            { id: 4,  nombre: "Scavenger", nombreEs: "Carroñero", juego: "BO1", mapa: "Call of the Dead", tipo: "Francotirador", descripcion: "Un rifle de francotirador que dispara explosivos de gran poder destructivo.", packAPunch: "Hyena Infra-Dead", comoObtener: "Cofre Misterioso en Call of the Dead.", imagen: "img/Scavenger.webp" },
+            { id: 5,  nombre: "V-R11", nombreEs: "V-R11", juego: "BO1", mapa: "Call of the Dead", tipo: "Especial", descripcion: "Convierte a los zombies en humanos que huyen y atraen a la horda.", packAPunch: "V-R11 Lazarus", comoObtener: "Cofre Misterioso en Call of the Dead.", imagen: "img/V-R11.webp" },
+            { id: 6,  nombre: "31-79 JGb215", nombreEs: "31-79 JGb215", juego: "BO1", mapa: "Shangri-La", tipo: "Especial", descripcion: "Encoge a los zombies, dejándolos con cabezas grandes y cuerpos diminutos.", packAPunch: "The Fractalizer", comoObtener: "Cofre Misterioso en Shangri-La.", imagen: "img/31-79 JGb215.webp" },
+            { id: 7,  nombre: "Wave Gun", nombreEs: "Arma de Ondas", juego: "BO1", mapa: "Moon", tipo: "Especial", descripcion: "Dispara microondas que hacen explotar a los zombies desde adentro.", packAPunch: "Zap Guns / Max Wave Gun", comoObtener: "Cofre Misterioso en Moon.", imagen: "img/Wave Gun.webp" },
+            { id: 8,  nombre: "Quantum Entanglement Device", nombreEs: "Dispositivo Cuántico", juego: "BO1", mapa: "Moon", tipo: "Granada Táctica", descripcion: "Granada impredecible que puede lanzar power-ups, explosiones o invocar zombies.", packAPunch: "No tiene versión Pack-a-Punch", comoObtener: "Cofre Misterioso en Moon.", imagen: "img/Quantum Entanglement Device.webp" },
+            { id: 9,  nombre: "Monkey Bomb", nombreEs: "Bomba Mono", juego: "BO1", mapa: "Varios mapas", tipo: "Granada Táctica", descripcion: "Atrae a todos los zombies con su música antes de explotar.", packAPunch: "No tiene versión Pack-a-Punch", comoObtener: "Cofre Misterioso en varios mapas.", imagen: "img/Monkey Bomb.webp" },
+            { id: 10, nombre: "Thrustodyne Aeronautics Model 23", nombreEs: "Jet Gun", juego: "BO2", mapa: "TranZit", tipo: "Especial", descripcion: "Arma construible que succiona y tritura zombies con su turbina.", packAPunch: "No tiene versión Pack-a-Punch", comoObtener: "Construida en TranZit con piezas del mapa.", imagen: "img/Thrustodyne Aeronautics Model 23.webp" },
+            { id: 11, nombre: "Sliquifier", nombreEs: "Licuadora", juego: "BO2", mapa: "Die Rise", tipo: "Especial", descripcion: "Dispara un líquido púrpura que hace resbalar a los zombies y los desintegra.", packAPunch: "No tiene versión Pack-a-Punch", comoObtener: "Construida en Die Rise con 4 piezas.", imagen: "img/Sliquifier.webp" },
+            { id: 12, nombre: "Blundergat", nombreEs: "Blundergat", juego: "BO2", mapa: "Mob of the Dead", tipo: "Escopeta", descripcion: "Escopeta de cuatro cañones brutal a corta distancia.", packAPunch: "The Sweeper", comoObtener: "Cofre Misterioso en Mob of the Dead.", imagen: "img/Blundergat.webp" },
+            { id: 13, nombre: "Hell's Retriever", nombreEs: "Buscador del Infierno", juego: "BO2", mapa: "Mob of the Dead", tipo: "Táctica / Melee", descripcion: "Hacha boomerang que atraviesa hasta 6 zombies y siempre regresa a tu mano.", packAPunch: "Hell's Redeemer", comoObtener: "Alimenta a los 3 perros de Cerbero en Mob of the Dead.", imagen: "img/Hell's Retriever.webp" },
+            { id: 14, nombre: "Golden Spork", nombreEs: "Tenedor Dorado", juego: "BO2", mapa: "Mob of the Dead", tipo: "Melee", descripcion: "Arma cuerpo a cuerpo de oro que mata de un golpe hasta la ronda 34.", packAPunch: "No aplica", comoObtener: "Pasos secretos en Mob of the Dead.", imagen: "img/Golden Spork.webp" },
+            { id: 15, nombre: "Ray Gun Mark II", nombreEs: "Ray Gun Mark II", juego: "BO2", mapa: "Buried / Origins", tipo: "Pistola", descripcion: "Versión mejorada del Ray Gun clásico, con ráfaga de 3 disparos.", packAPunch: "Porter's Mark II Ray Gun", comoObtener: "Cofre Misterioso en Buried y Origins.", imagen: "img/Ray Gun Mark II.webp" },
+            { id: 16, nombre: "Paralyzer", nombreEs: "Paralizador", juego: "BO2", mapa: "Buried", tipo: "Especial", descripcion: "Rayo que paraliza y desintegra zombies. Munición infinita pero se sobrecalienta.", packAPunch: "No tiene versión Pack-a-Punch", comoObtener: "Cofre Misterioso en Buried.", imagen: "img/Paralyzer.webp" },
+            { id: 17, nombre: "Time Bomb", nombreEs: "Bomba de Tiempo", juego: "BO2", mapa: "Buried", tipo: "Equipamiento", descripcion: "Coloca un punto de guardado en el tiempo y vuelve a él al detonarlo.", packAPunch: "No tiene versión Pack-a-Punch", comoObtener: "Cofre Misterioso en Buried.", imagen: "img/Time Bomb.webp" },
+            { id: 18, nombre: "Staff of Air", nombreEs: "Báculo de Aire", juego: "BO2", mapa: "Origins", tipo: "Báculo Elemental", descripcion: "Dispara ráfagas de viento capaces de lanzar a los zombies por los aires.", packAPunch: "Boreas' Fury", comoObtener: "Construido en Origins con piezas del mapa.", imagen: "img/Staff of Air.webp" },
+            { id: 19, nombre: "Staff of Fire", nombreEs: "Báculo de Fuego", juego: "BO2", mapa: "Origins", tipo: "Báculo Elemental", descripcion: "Dispara bolas de fuego que queman a los zombies con llamas infernales.", packAPunch: "Kimat's Bite", comoObtener: "Construido en Origins con piezas del mapa.", imagen: "img/Staff of fire.webp" },
+            { id: 20, nombre: "Staff of Ice", nombreEs: "Báculo de Hielo", juego: "BO2", mapa: "Origins", tipo: "Báculo Elemental", descripcion: "Congela y ralentiza a los zombies, para luego hacerlos pedazos.", packAPunch: "Ull's Arrow", comoObtener: "Construido en Origins con piezas del mapa.", imagen: "img/Staff of ice.webp" },
+            { id: 21, nombre: "Staff of Lightning", nombreEs: "Báculo de Rayo", juego: "BO2", mapa: "Origins", tipo: "Báculo Elemental", descripcion: "Dispara rayos en cadena, electrocutando a múltiples zombies a la vez.", packAPunch: "Kimat's Bite", comoObtener: "Construido en Origins con piezas del mapa.", imagen: "img/Staff of lightning.webp" },
+            { id: 22, nombre: "G-Strike", nombreEs: "Golpe G", juego: "BO2", mapa: "Origins", tipo: "Granada Táctica", descripcion: "Versión mejorada de la Bomba Mono. Atrae a los zombies y los bombardea.", packAPunch: "No tiene versión Pack-a-Punch", comoObtener: "Cofre Misterioso en Origins.", imagen: "img/G-Strike.webp" }
+        ];
+
+        const grid = document.getElementById('weapon-grid');
+        const modal = document.getElementById('modal');
+        const cerrarModal = document.getElementById('cerrar-modal');
+        const modalTitulo = document.getElementById('modal-titulo');
+        const modalInfo = document.getElementById('modal-info');
+        const logoJuggernog = document.getElementById('logo-juggernog');
+        const sonidoJuggernog = document.getElementById('sonido-juggernog');
+        const sonidoArma = document.getElementById('sonido-arma');
+        const sonidoThundergun = document.getElementById('sonido-thundergun');
+        const sonidoMonkey = document.getElementById('sonido-monkey');
+        const sonidoRaygun = document.getElementById('sonido-raygun');
+        const easterBtn = document.getElementById('easter-egg-btn');
+        const easterOverlay = document.getElementById('easter-egg-overlay');
+        const cerrarEaster = document.getElementById('cerrar-easter');
+        const easterGif = document.getElementById('easter-gif');
+        const easterRaygun = document.getElementById('easter-raygun');
+        const buscador = document.getElementById('buscador');
+        const buscadorClear = document.getElementById('buscador-clear');
+        const iconoLupa = document.getElementById('icono-lupa');
+        const infoResultados = document.getElementById('info-resultados');
+
+        let filtroActual = 'todos';
+        let terminoBusqueda = '';
+
+        logoJuggernog.addEventListener('click', () => {
+            sonidoJuggernog.currentTime = 0;
+            sonidoJuggernog.volume = 0.7;
+            sonidoJuggernog.play().catch(err => console.warn(err));
+        });
+
+        // ============================================
+        // SONIDO DE ARMAS
+        // - Thundergun → thundergunsound.mp3
+        // - Monkey Bomb → cod-zombies-monkey.mp3 (exclusivo)
+        // - Todas las demás → Mystery Box.mp3
+        // ============================================
+        function reproducirSonidoArma(nombreArma) {
+            // Frenamos todos los audios de armas
+            sonidoArma.pause();
+            sonidoThundergun.pause();
+            sonidoMonkey.pause();
+            sonidoArma.currentTime = 0;
+            sonidoThundergun.currentTime = 0;
+            sonidoMonkey.currentTime = 0;
+
+            if (nombreArma === "Thundergun") {
+                // Sonido exclusivo de la Thundergun
+                sonidoThundergun.volume = 0.8;
+                sonidoThundergun.play().catch(err => console.warn(err));
+            } else if (nombreArma === "Monkey Bomb") {
+                // Sonido exclusivo de la Monkey Bomb
+                sonidoMonkey.volume = 0.7;
+                sonidoMonkey.play().catch(err => console.warn(err));
+            } else {
+                // Sonido genérico (Mystery Box) para el resto
+                sonidoArma.volume = 0.6;
+                sonidoArma.play().catch(err => console.warn(err));
+            }
+        }
+
+        const svgPlaceholder = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">' +
+            '<rect width="200" height="200" fill="#8B1C1C"/>' +
+            '<text x="100" y="105" fill="white" text-anchor="middle" font-size="14" font-family="Arial">SIN IMAGEN</text>' +
+            '</svg>'
+        );
+
+        function resaltar(texto, termino) {
+            if (!termino) return texto;
+            const escapado = termino.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp('(' + escapado + ')', 'gi');
+            return texto.replace(regex, '<mark>$1</mark>');
+        }
+
+        function renderizarArmas(lista) {
+            grid.innerHTML = '';
+
+            if (lista.length === 0) {
+                grid.innerHTML = '<p class="sin-resultados">No se encontraron armas con ese criterio. 🔍<br><br>Probá con otro nombre o cambiá el filtro.</p>';
+                infoResultados.innerHTML = '';
+                return;
+            }
+
+            lista.forEach(arma => {
+                const card = document.createElement('article');
+                card.classList.add('weapon-card');
+
+                const nombreResaltado = resaltar(arma.nombre, terminoBusqueda);
+                const nombreEsResaltado = resaltar(arma.nombreEs, terminoBusqueda);
+                const mapaResaltado = resaltar(arma.mapa, terminoBusqueda);
+
+                card.innerHTML = `
+                    <div class="card-imagen">
+                        <img alt="${arma.nombre}">
+                    </div>
+                    <div class="card-info">
+                        <span class="badge ${arma.juego}">${arma.juego}</span>
+                        <h3>${nombreResaltado}</h3>
+                        <p class="nombre-es">${nombreEsResaltado}</p>
+                        <p class="mapa">📍 ${mapaResaltado}</p>
+                        <p class="tipo">🎯 ${arma.tipo}</p>
+                        <p class="descripcion">${arma.descripcion}</p>
+                        <button class="btn-pap" data-id="${arma.id}">⚡ Ver Pack-a-Punch</button>
+                    </div>
+                `;
+
+                const img = card.querySelector('img');
+                img.addEventListener('error', function () {
+                    this.onerror = null;
+                    this.src = svgPlaceholder;
+                });
+                img.src = arma.imagen;
+
+                const cardImagen = card.querySelector('.card-imagen');
+                cardImagen.addEventListener('click', () => {
+                    reproducirSonidoArma(arma.nombre);
+                    cardImagen.classList.add('sonando');
+                    setTimeout(() => cardImagen.classList.remove('sonando'), 500);
+                });
+                grid.appendChild(card);
+            });
+
+            activarBotonesPAP();
+
+            if (terminoBusqueda) {
+                infoResultados.innerHTML = `Se encontraron <strong>${lista.length}</strong> arma${lista.length !== 1 ? 's' : ''} para "<strong>${terminoBusqueda}</strong>"`;
+            } else {
+                infoResultados.innerHTML = `Mostrando <strong>${lista.length}</strong> arma${lista.length !== 1 ? 's' : ''}`;
+            }
+        }
+
+        function aplicarFiltros() {
+            let lista = wonderWeapons;
+
+            if (filtroActual !== 'todos') {
+                lista = lista.filter(a => a.juego === filtroActual);
+            }
+
+            if (terminoBusqueda) {
+                const t = terminoBusqueda.toLowerCase();
+                lista = lista.filter(a =>
+                    a.nombre.toLowerCase().includes(t) ||
+                    a.nombreEs.toLowerCase().includes(t) ||
+                    a.mapa.toLowerCase().includes(t) ||
+                    a.tipo.toLowerCase().includes(t)
+                );
+            }
+
+            renderizarArmas(lista);
+        }
+
+        buscador.addEventListener('input', (e) => {
+            terminoBusqueda = e.target.value.trim();
+
+            if (terminoBusqueda.length > 0) {
+                buscadorClear.classList.add('visible');
+                iconoLupa.style.display = 'none';
+            } else {
+                buscadorClear.classList.remove('visible');
+                iconoLupa.style.display = 'block';
+            }
+
+            aplicarFiltros();
+        });
+
+        buscadorClear.addEventListener('click', () => {
+            buscador.value = '';
+            terminoBusqueda = '';
+            buscadorClear.classList.remove('visible');
+            iconoLupa.style.display = 'block';
+            buscador.focus();
+            aplicarFiltros();
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === '/' && document.activeElement !== buscador && document.activeElement.tagName !== 'INPUT') {
+                e.preventDefault();
+                buscador.focus();
+            }
+        });
+
+        document.querySelectorAll('.btn-filtro').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('activo'));
+                btn.classList.add('activo');
+                filtroActual = btn.dataset.filtro;
+                aplicarFiltros();
+            });
+        });
+
+        function activarBotonesPAP() {
+            document.querySelectorAll('.btn-pap').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = parseInt(btn.dataset.id);
+                    const arma = wonderWeapons.find(a => a.id === id);
+                    if (!arma) return;
+                    modalTitulo.textContent = arma.nombre;
+                    modalInfo.innerHTML =
+                        '<strong>Versión Pack-a-Punch:</strong><br>' +
+                        '<span class="pap-nombre">' + arma.packAPunch + '</span><br><br>' +
+                        '<strong>Cómo obtenerla:</strong><br>' + arma.comoObtener;
+                    modal.style.display = 'flex';
+                });
+            });
+        }
+        cerrarModal.addEventListener('click', () => modal.style.display = 'none');
+        window.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (modal.style.display === 'flex') modal.style.display = 'none';
+                if (easterOverlay.classList.contains('activo')) cerrarEasterEgg();
+            }
+        });
+
+        let temporizadorEaster = null;
+
+        function abrirEasterEgg() {
+            easterOverlay.classList.add('activo');
+            easterGif.classList.remove('ocultar');
+            easterGif.style.display = 'block';
+            easterRaygun.classList.remove('activo');
+            easterRaygun.style.display = 'none';
+
+            sonidoRaygun.currentTime = 0;
+            sonidoRaygun.volume = 0.8;
+            sonidoRaygun.play().catch(err => console.warn('Audio easter egg:', err));
+
+            sonidoArma.pause();
+            sonidoThundergun.pause();
+            sonidoMonkey.pause();
+            sonidoJuggernog.pause();
+
+            clearTimeout(temporizadorEaster);
+            temporizadorEaster = setTimeout(() => {
+                easterGif.classList.add('ocultar');
+                setTimeout(() => {
+                    easterGif.style.display = 'none';
+                    easterRaygun.style.display = 'block';
+                    easterRaygun.classList.add('activo');
+                }, 600);
+            }, 3000);
+        }
+
+        function cerrarEasterEgg() {
+            easterOverlay.classList.remove('activo');
+            sonidoRaygun.pause();
+            sonidoRaygun.currentTime = 0;
+            clearTimeout(temporizadorEaster);
+
+            setTimeout(() => {
+                easterGif.classList.remove('ocultar');
+                easterGif.style.display = 'block';
+                easterRaygun.classList.remove('activo');
+                easterRaygun.style.display = 'none';
+            }, 400);
+        }
+
+        easterBtn.addEventListener('click', abrirEasterEgg);
+        cerrarEaster.addEventListener('click', cerrarEasterEgg);
+        easterOverlay.addEventListener('click', (e) => {
+            if (e.target === easterOverlay) cerrarEasterEgg();
+        });
+
+        aplicarFiltros();
+    </script>
+
+</body>
+</html>
