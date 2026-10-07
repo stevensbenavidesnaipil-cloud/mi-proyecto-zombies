@@ -157,6 +157,80 @@
         }
         .info-resultados strong { color: #e94560; }
 
+        /* ============================================
+           GALERÍA DEL APOCALIPSIS (Unsplash API)
+           ============================================ */
+        .galeria-api {
+            max-width: 1400px;
+            margin: 40px auto 20px;
+            padding: 0 40px;
+            text-align: center;
+        }
+        .galeria-api h2 {
+            color: #fff;
+            font-size: 1.8rem;
+            text-shadow: 2px 2px 6px #8B1C1C;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+        .galeria-sub {
+            color: #a0a0a0;
+            font-style: italic;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        .galeria-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .galeria-grid img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid #8B1C1C;
+            box-shadow: 0 0 15px rgba(139, 28, 28, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            cursor: pointer;
+            animation: fadeInUp 0.5s ease-out;
+        }
+        .galeria-grid img:hover {
+            transform: scale(1.05);
+            border-color: #e94560;
+            box-shadow: 0 0 25px rgba(233, 69, 96, 0.8);
+        }
+        .galeria-cargando {
+            grid-column: 1 / -1;
+            color: #a0a0a0;
+            font-style: italic;
+            padding: 40px;
+        }
+        .btn-recargar-galeria {
+            background: #8B1C1C;
+            color: #fff;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            letter-spacing: 1px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        .btn-recargar-galeria:hover {
+            background: #e94560;
+            box-shadow: 0 0 20px rgba(233, 69, 96, 0.8);
+            transform: translateY(-3px);
+        }
+        .btn-recargar-galeria:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .weapon-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -445,6 +519,10 @@
             .easter-raygun-info h2 { font-size: 1.3rem; }
             .cerrar-easter { font-size: 2rem; top: 10px; right: 15px; }
             #buscador { font-size: 0.9rem; padding: 12px 45px 12px 18px; }
+            .galeria-api { padding: 0 20px; }
+            .galeria-api h2 { font-size: 1.3rem; }
+            .galeria-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .galeria-grid img { height: 130px; }
         }
     </style>
 </head>
@@ -460,6 +538,7 @@
         </div>
     </header>
 
+    <!-- BUSCADOR -->
     <section class="buscador-container">
         <div class="buscador-wrapper">
             <input type="text" id="buscador" placeholder="🔍 Buscar arma por nombre, mapa o tipo..." autocomplete="off">
@@ -475,6 +554,18 @@
     </section>
 
     <p class="info-resultados" id="info-resultados"></p>
+
+    <!-- ============================================
+         GALERÍA DEL APOCALIPSIS (API Unsplash)
+         ============================================ -->
+    <section class="galeria-api">
+        <h2>📸 Galería del Apocalipsis</h2>
+        <p class="galeria-sub">Imágenes aleatorias traídas en vivo desde Unsplash</p>
+        <div class="galeria-grid" id="galeria-api">
+            <p class="galeria-cargando">Cargando imágenes...</p>
+        </div>
+        <button class="btn-recargar-galeria" id="btn-recargar-galeria">🔄 Recargar imágenes</button>
+    </section>
 
     <main class="weapon-grid" id="weapon-grid"></main>
 
@@ -590,14 +681,7 @@
             sonidoJuggernog.play().catch(err => console.warn(err));
         });
 
-        // ============================================
-        // SONIDO DE ARMAS
-        // - Thundergun → thundergunsound.mp3
-        // - Monkey Bomb → cod-zombies-monkey.mp3 (exclusivo)
-        // - Todas las demás → Mystery Box.mp3
-        // ============================================
         function reproducirSonidoArma(nombreArma) {
-            // Frenamos todos los audios de armas
             sonidoArma.pause();
             sonidoThundergun.pause();
             sonidoMonkey.pause();
@@ -606,15 +690,12 @@
             sonidoMonkey.currentTime = 0;
 
             if (nombreArma === "Thundergun") {
-                // Sonido exclusivo de la Thundergun
                 sonidoThundergun.volume = 0.8;
                 sonidoThundergun.play().catch(err => console.warn(err));
             } else if (nombreArma === "Monkey Bomb") {
-                // Sonido exclusivo de la Monkey Bomb
                 sonidoMonkey.volume = 0.7;
                 sonidoMonkey.play().catch(err => console.warn(err));
             } else {
-                // Sonido genérico (Mystery Box) para el resto
                 sonidoArma.volume = 0.6;
                 sonidoArma.play().catch(err => console.warn(err));
             }
@@ -824,6 +905,65 @@
         easterOverlay.addEventListener('click', (e) => {
             if (e.target === easterOverlay) cerrarEasterEgg();
         });
+
+        // ============================================
+        // GALERÍA DEL APOCALIPSIS - API de Unsplash
+        // ============================================
+        const UNSPLASH_ACCESS_KEY = 'iFApMZaK08N6cCBWboXGwqvwYpUF3mVeqbBZGSkig2I';
+        const galeriaAPI = document.getElementById('galeria-api');
+        const btnRecargarGaleria = document.getElementById('btn-recargar-galeria');
+
+        async function cargarGaleriaApocalipsis() {
+            if (!galeriaAPI) return;
+
+            btnRecargarGaleria.disabled = true;
+            galeriaAPI.innerHTML = '<p class="galeria-cargando">Cargando imágenes...</p>';
+
+            try {
+                const terminos = ['zombie apocalypse', 'abandoned ruins', 'dark fog', 'haunted forest', 'post apocalyptic'];
+                const terminoAleatorio = terminos[Math.floor(Math.random() * terminos.length)];
+
+                const respuesta = await fetch(
+                    `https://api.unsplash.com/photos/random?query=${encodeURIComponent(terminoAleatorio)}&count=6&client_id=${UNSPLASH_ACCESS_KEY}`
+                );
+
+                if (!respuesta.ok) {
+                    throw new Error('Error al consultar la API: ' + respuesta.status);
+                }
+
+                const fotos = await respuesta.json();
+
+                galeriaAPI.innerHTML = '';
+
+                fotos.forEach(foto => {
+                    const img = document.createElement('img');
+                    img.src = foto.urls.small;
+                    img.alt = foto.alt_description || 'Imagen del apocalipsis';
+                    img.title = `Fotógrafo: ${foto.user.name} — Clic para abrir en Unsplash`;
+                    img.addEventListener('click', () => {
+                        window.open(foto.links.html, '_blank');
+                    });
+                    img.addEventListener('error', function () {
+                        this.src = svgPlaceholder;
+                    });
+                    galeriaAPI.appendChild(img);
+                });
+
+            } catch (error) {
+                console.error('Error al cargar la galería:', error);
+                galeriaAPI.innerHTML = `
+                    <p class="galeria-cargando">
+                        ⚠️ No se pudieron cargar las imágenes.<br>
+                        <small>Verificá tu conexión o tu Access Key de Unsplash.</small>
+                    </p>
+                `;
+            } finally {
+                btnRecargarGaleria.disabled = false;
+            }
+        }
+
+        cargarGaleriaApocalipsis();
+        btnRecargarGaleria.addEventListener('click', cargarGaleriaApocalipsis);
 
         aplicarFiltros();
     </script>
